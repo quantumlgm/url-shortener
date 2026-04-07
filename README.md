@@ -21,7 +21,7 @@ A lightweight REST API service for shortening long URLs, built with FastAPI and 
 ```bash
 git clone [https://github.com/your-username/url-shortener.git](https://github.com/your-username/url-shortener.git)
 cd url-shortener
-
+```
 ### Install Dependencies
 ```Bash
 pip install fastapi uvicorn sqlalchemy pydantic
