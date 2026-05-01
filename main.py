@@ -12,10 +12,6 @@ Base.metadata.create_all(bind=engine)
 
 @app.get('/', tags=["System"])
 async def root():
-    """
-    **Главная**
-    Возвращает информацию о проекте и доступных эндпоинтах.
-    """
     return {
         "Project": "URL Shortener API",
         "Status": "Running",
@@ -25,12 +21,6 @@ async def root():
 
 @app.post('/shorten', tags=["User Endpoints"])
 async def shorten(link: HttpUrl, db: Session = Depends(get_db)):
-    """
-    **Создать короткую ссылку.**
-    
-    - Генерирует уникальный 4-символьный код.
-    - Проверяет базу на наличие дубликатов кода.
-    """
     while True:
         short_link = str(uuid.uuid4())[:4]
         query = db.query(LinksDB).filter(LinksDB.short_link == short_link).first()
@@ -44,11 +34,6 @@ async def shorten(link: HttpUrl, db: Session = Depends(get_db)):
 
 @app.get('/links', tags=["Admin Endpoints"])
 async def get_all_links(db: Session = Depends(get_db)):
-    """
-    **Получить все ссылки.**
-    
-    Выводит список ссылок, хранящихся в базе данных.
-    """
     all_links = db.query(LinksDB).all()
     if not all_links:
         raise HTTPException(status_code=404, detail='База данных пуста')
@@ -63,11 +48,6 @@ async def search_link(
     short_link: str = Path(..., description="Код ссылки для поиска"), 
     db: Session = Depends(get_db)
 ):
-    """
-    **Поиск ссылки по коду.**
-    
-    Выводит конкретную пару ссылок
-    """
     found_link = db.query(LinksDB).filter(LinksDB.short_link == short_link).first()
     if found_link:
         return {"short_link": short_link, "long_link": found_link.long_link}
@@ -75,11 +55,6 @@ async def search_link(
 
 @app.get('/{link}', tags=["User Endpoints"])
 async def redirect_to_url(link: str, db: Session = Depends(get_db)):
-    """
-    **Редирект.**
-    
-    Принимает короткую ссылку и перенаправляет пользователя на оригинальный URL.
-    """
     db_item = db.query(LinksDB).filter(LinksDB.short_link == link).first()
     if db_item:
         return RedirectResponse(url=db_item.long_link)
@@ -87,11 +62,6 @@ async def redirect_to_url(link: str, db: Session = Depends(get_db)):
 
 @app.delete('/links/{short_link}', tags=["Admin Endpoints"])
 async def delete_link(short_link: str, db: Session = Depends(get_db)):
-    """
-    **Удаление ссылки.**
-    
-    Навсегда удаляет запись о ссылке из базы данных.
-    """
     del_link = db.query(LinksDB).filter(LinksDB.short_link == short_link).first()
     if del_link:
         db.delete(del_link)
@@ -105,11 +75,6 @@ async def update_link(
     new_link: Annotated[str, Body(embed=True)], 
     db: Session = Depends(get_db)
 ):
-    """
-    **Обновление ссылки.**
-    
-    Позволяет изменить URL для уже существующей короткой ссылки.
-    """
     found_link = db.query(LinksDB).filter(LinksDB.short_link == short_link).first()
     if found_link:
         found_link.long_link = str(new_link)
